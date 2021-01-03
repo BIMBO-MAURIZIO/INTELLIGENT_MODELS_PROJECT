@@ -141,15 +141,7 @@ TrainedG.add_nodes_from(films,bipartite = 1)
 for i in range(int(10/100*nx.number_of_edges(G))):
    G, TestG = removeEdge(G, TestG)
 
-'''
-for edge in G.edges:
-   counter = counter = counter + 1
-for edge in TestG.edges:
-   counter2 = counter2 = counter2 + 1
 
-print(counter)
-print(counter2)
-'''
 top_nodes = {n for n, d in G.nodes(data=True) if d["bipartite"] == 0}
 for node in top_nodes:
    TrainedG = prediction(G, node, k, TrainedG)
