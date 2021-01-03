@@ -1,0 +1,1 @@
+Il progetto è contenuto nel file 'film_prediction.py'. Esso richiede dei dati contenuti all'interno delle sottcartelle di 'ml-100k', perciò si richiede di eseguire lo script python nella stessa cartella in cui essa è riposta.
