@@ -3,14 +3,14 @@ from networkx.algorithms import bipartite
 import random
 
 
-def removeEdge(G,TestG):
+def removeEdge(G, minEdgesNumb, TestG):
    result = 0
    while result != 1:
       randUsr = str(random.randint(1,943))
       neighList = list(G.neighbors(randUsr))
-      #verify if the node has more than 5 neighbor
+      #verify if the node has more than a certain number of neighbor
 
-      if(len(neighList) >= 5):
+      if(len(neighList) >= minEdgesNumb):
          randExt = random.randint(0,len(neighList)-1)
          filmEl = neighList[randExt]
          G.remove_edge(randUsr,filmEl)
@@ -26,7 +26,6 @@ def randomChoice(neighList):
       singleStep = 1/numberOfNeigh
    else :
       selectedNeighbor = "nonvalid"
-      #print("not enough neighbor to compute value")
       return selectedNeighbor
    ranges = [0 for i in range(numberOfNeigh+1)]
    for i in range(numberOfNeigh):
@@ -42,7 +41,6 @@ def randomChoice(neighList):
    return selectedNeighbor
 
 
-#applicata su ogni nodo deve scegliere un link a caso in maniera equiprobabile e fare una random walk di lunghezza 3
 def prediction(G, node, k, B):
    counter = {}
    for i in range(k):
@@ -125,8 +123,15 @@ finally:
 G = nx.Graph()
 TestG = nx.Graph()
 TrainedG = nx.Graph()
-k = 500
 
+# variable parameters 
+
+# k = number of repetitions of the random walk
+k = 1000
+# fraction = ratio between test set dimenction and the whole set dimenction
+fraction = 20/100
+# minEdgeNumb = if a node has lett than this number of neighbors(and so out-edges) then we cannot remove edges from this node in TestSet composition phase
+minEdgeNumb = 10
 
 G.add_nodes_from(users,bipartite = 0)
 G.add_nodes_from(films,bipartite = 1)
@@ -138,8 +143,9 @@ TestG.add_nodes_from(films,bipartite = 1)
 TrainedG.add_nodes_from(users,bipartite = 0)
 TrainedG.add_nodes_from(films,bipartite = 1)
 
-for i in range(int(10/100*nx.number_of_edges(G))):
-   G, TestG = removeEdge(G, TestG)
+
+for i in range(int(fraction*nx.number_of_edges(G))):
+   G, TestG = removeEdge(G, minEdgeNumb, TestG)
 
 
 top_nodes = {n for n, d in G.nodes(data=True) if d["bipartite"] == 0}
@@ -148,11 +154,24 @@ for node in top_nodes:
 
 TrainedEdges = list(TrainedG.edges)
 TestEdges = list(TestG.edges)
-counter = 0
-for i in range(len(TrainedEdges)):
+
+CommonEdges = []
+#verify which users of TrainedG are also in some edge of TestG
+for i in range (len(TrainedEdges)):
    for j in range(len(TestEdges)):
-      if TrainedEdges[i] == TestEdges[j]:
+      if TrainedEdges[i][0] == TestEdges[j][0]:
+         CommonEdges.append(TrainedEdges[i])
+         break
+
+
+counter = 0
+for i in range(len(CommonEdges)):
+   for j in range(len(TestEdges)):
+      if CommonEdges[i] == TestEdges[j]:
          counter = counter+1
-print("the edges actually trained were",str(len(TrainedEdges)))         
+
+
+print("the edges actually predicted were",str(len(TrainedEdges)))
+print("the predicted edges with common users between trained graph and test graph were",str(len(CommonEdges)))           
 print("the edges that were correctly predicted were",str(counter))
-print("the percentage of success is ",str(counter/len(TrainedEdges)*100)+"%")
+print("the percentage of success is ",str(counter/len(CommonEdges)*100)+"%")
